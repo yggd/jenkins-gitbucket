@@ -1,0 +1,43 @@
+version: '3'
+
+services:
+  jenkins:
+    image: blueocean-pluginpreinstall
+    user: "1000:${DOCKER_GID}"
+    volumes:
+      - '/var/dockervolume/jenkins:/var/jenkins_home'
+      - '/var/run/docker.sock:/var/run/docker.sock'
+    environment:
+      - JAVA_OPTS='-Djenkins.install.runSetupWizard=false'
+    ports:
+      - '8080:8080'
+      - '50000:50000'
+    networks:
+      - cinet01
+
+  gitbucket:
+    image: gitbucket/gitbucket
+    volumes:
+      - '/var/dockervolume/gitbucket:/gitbucket'
+    environment:
+      - MAX_FILE_SIZE=10485760
+    networks:
+      - cinet01
+
+  git:
+    image: nginx:latest
+    volumes:
+      - './nginx:/etc/nginx/conf.d/'
+    ports:
+      - '80:80'
+    restart: always
+    depends_on:
+      - gitbucket
+    networks:
+      - cinet01
+
+networks:
+  cinet01:
+    external: true
+
+
